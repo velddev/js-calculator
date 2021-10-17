@@ -1,0 +1,14 @@
+{
+  "name": "calculator",
+  "version": "1.0.0",
+  "description": "Calculator created in js",
+  "main": "index.js",
+  "author": "Velddev",
+  "license": "MIT",
+  "scripts": {
+    "start": "node src/index"
+  },
+  "devDependencies": {
+    "jest": "^27.2.5"
+  }
+}
