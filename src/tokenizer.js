@@ -15,6 +15,9 @@ const tokenType = {
   Divide: "DIVIDE",
   Whitespace: "WHITESPACE",
   EndOfInput: "END_OF_INPUT",
+  Identifier: "IDENTIFIER",
+  Assign: "ASSIGN",
+  Let: "LET",
 };
 
 const tokenizerReaders = {
@@ -25,6 +28,9 @@ const tokenizerReaders = {
   "^\\(": tokenType.OpenParenthesis,
   "^\\)": tokenType.CloseParenthesis,
   "^\\/": tokenType.Divide,
+  "^let": tokenType.Let,
+  "^=": tokenType.Assign,
+  "^[a-zA-Z][a-zA-Z0-9]*": tokenType.Identifier,
 }
 
 /**

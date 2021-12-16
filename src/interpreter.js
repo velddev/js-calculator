@@ -1,3 +1,4 @@
+const store = require("./store");
 const { tokenType } = require("./tokenizer");
 
 /**
@@ -38,24 +39,43 @@ const assert = (token, type) => {
  * @returns 
  */
 const interpretRoot = (tokens) => {
-  const result = interpretExpression(tokens);
-  const token = peek(tokens);
+  let result = interpretStatement(tokens);
 
-  if (token.type == tokenType.EndOfInput) {
-    return result;
+  const currentToken = peek(tokens);
+  if (currentToken.type != tokenType.EndOfInput) {
+    throw new Error("Expected end of input, got " + currentToken.type);
   }
 
-  tokens.unshift({
-    type: tokenType.Number,
-    value: result,
-  });
-  return interpretRoot(tokens);
+  return result
 };
 
+const interpretStatement = (tokens) => {
+  const token = peek(tokens);
+
+  if (token.type == tokenType.Let) {
+    skip(tokens);
+    const identifier = take(tokens, tokenType.Identifier);
+    take(tokens, tokenType.Assign);
+    const value = interpretExpression(tokens);
+    store.set(identifier.value, value);
+    return value;
+  }
+
+  return interpretExpression(tokens);
+};
+
+/**
+ * @param {Token[]} tokens 
+ * @returns {number}
+ */
 const interpretExpression = (tokens) => {
   return interpretFactor(tokens);
 };
 
+/**
+ * @param {Token[]} tokens 
+ * @returns {number}
+ */
 const interpretFactor = (tokens) => {
   const a = interpretTerm(tokens);
   const op = peek(tokens);
@@ -77,7 +97,10 @@ const interpretFactor = (tokens) => {
   return a;
 };
 
-
+/**
+ * @param {Token[]} tokens 
+ * @returns {number}
+ */
 const interpretTerm = (tokens) => {
   const a = interpretPrimitive(tokens);
   const op = peek(tokens);
@@ -99,6 +122,10 @@ const interpretTerm = (tokens) => {
   return a;
 };
 
+/**
+ * @param {Token[]} tokens 
+ * @returns {number}
+ */
 const interpretPrimitive = (tokens) => {
   const a = take(tokens);
   if (a.type === tokenType.OpenParenthesis) {
@@ -106,6 +133,16 @@ const interpretPrimitive = (tokens) => {
     take(tokens, tokenType.CloseParenthesis);
     return value;
   }
+
+  if (a.type === tokenType.Identifier) {
+    const value = store.get(a.value);
+    if (value == null || value == undefined) {
+      throw new Error("Undefined stored variable: " + a.value);
+    }
+    console.log(`identifier(${a.value})`, value);
+    return Number(value);
+  }
+
   assert(a, tokenType.Number);
   console.log(a.value);
   return Number(a.value);
